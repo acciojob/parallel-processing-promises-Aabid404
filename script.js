@@ -1,45 +1,48 @@
-const imageUrls = [
-      "https://picsum.photos/200/300",
-      "https://picsum.photos/250/300",
-      "https://picsum.photos/300/300",
-      "https://invalid-url.com/fail.jpg" // This will trigger error
+ const imageUrls = [
+      "https://picsum.photos/200/300?random=1",
+      "https://picsum.photos/200/300?random=2",
+      "https://picsum.photos/200/300?random=3",
+      "https://invalid-url-to-test-error.jpg" // ❌ Example broken URL
     ];
 
-    // Function to download a single image
+    // Single image downloader returning a Promise
     function downloadImage(url) {
       return new Promise((resolve, reject) => {
         const img = new Image();
         img.src = url;
+
         img.onload = () => resolve(img);
-        img.onerror = () => reject(`Failed to load image: ${url}`);
+        img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
       });
     }
 
-    // Main function to download all images
-    async function downloadImages() {
+    // Main function using Promise.all
+    async function downloadImages(urls) {
       const loadingDiv = document.getElementById("loading");
       const errorDiv = document.getElementById("error");
       const outputDiv = document.getElementById("output");
 
-      // Reset states
+      // Reset UI
       loadingDiv.style.display = "block";
       errorDiv.textContent = "";
       outputDiv.innerHTML = "";
 
       try {
-        const images = await Promise.all(imageUrls.map(downloadImage));
+        const images = await Promise.all(urls.map(downloadImage));
+
         // Hide loader
         loadingDiv.style.display = "none";
 
-        // Append all images
+        // Display images
         images.forEach(img => outputDiv.appendChild(img));
       } catch (err) {
         // Hide loader
         loadingDiv.style.display = "none";
+
         // Show error
-        errorDiv.textContent = err;
+        errorDiv.textContent = err.message;
       }
     }
 
-    // Start downloading on page load
-    window.onload = downloadImages;
+    // Trigger download
+    downloadImages(imageUrls);
